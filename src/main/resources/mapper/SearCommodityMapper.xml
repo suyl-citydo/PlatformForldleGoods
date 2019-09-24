@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.SearCommodityMapper">
+
+    <resultMap id="CommodityMap" type="commodity">
+        <id property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="cname" column="cname" jdbcType="VARCHAR"/>
+        <result property="cprice" column="cprice" jdbcType="DOUBLE"/>
+        <result property="cnum" column="cnum" jdbcType="INTEGER"/>
+        <result property="url" column="url" jdbcType="VARCHAR"/>
+        <result property="describes" column="describes" jdbcType="VARCHAR"/>
+        <result property="bigType" column="bigType" jdbcType="BIGINT"/>
+        <result property="smallType" column="smallType" jdbcType="VARCHAR"/>
+        <result property="flag" column="flag" jdbcType="INTEGER"/>
+        <result property="isNew" column="isNew" jdbcType="INTEGER"/>
+        <result property="isCollection" column="isCollection" jdbcType="INTEGER"/>
+        <result property="isSellOut" column="isSellOut" jdbcType="INTEGER"/>
+        <result property="salesVolume" column="salesVolume" jdbcType="INTEGER"/>
+        <result property="time" column="time" jdbcType="VARCHAR"/>
+        <result property="remarks" column="remarks" jdbcType="DOUBLE"/>
+    </resultMap>
+
+    <!--查找子类商品-->
+    <select id="findSmallCommodity" parameterType="Map" resultMap="CommodityMap">
+        select * from tb_commodity where smallType=#{smallType} and flag=0 and cnum>0 order by time desc
+        <if test="start!=null and size!=null">
+            limit #{start},#{size};
+        </if>
+    </select>
+    <select id="smallCount" resultType="Integer">
+         select count(1) from tb_commodity where smallType=#{smallType} and cnum>0 and flag=0;
+    </select>
+
+    <!--查找整个大类商品-->
+    <select id="findBigCommodity" parameterType="Map" resultMap="CommodityMap">
+        select * from tb_commodity where bigType=#{bigType} and flag=0 and cnum>0 order by time desc
+        <if test="start!=null and size!=null">
+            limit #{start},#{size};
+        </if>
+    </select>
+    <select id="bigCount" resultType="Integer">
+        select count(1) from tb_commodity where bigType=#{bigType} and cnum>0 and flag=0;
+    </select>
+
+    <!--多条件查询商品-->
+    <select id="findByConPage" resultType="commodity">
+        select *
+        from tb_commodity
+        <if test="cprice==null and isCollection==null">
+             where time between #{startTime} and #{endTime} and cnum>0 and flag=0 order by time desc;
+        </if>
+        <if test="cprice==0 and isCollection==null">
+             where time between #{startTime} and #{endTime} and cnum>0 and flag=0 order by remarks asc,time desc;
+        </if>
+        <if test="cprice==0 and isCollection==0">
+            where time between #{startTime} and #{endTime} and cnum>0 and flag=0 order by remarks asc,isCollection asc,time desc;
+        </if>
+        <if test="cprice==1 and isCollection==0">
+            where time between #{startTime} and #{endTime} and cnum>0 and flag=0 order by remarks desc,isCollection asc,time desc;
+        </if>
+        <if test="cprice==0 and isCollection==1">
+            where time between #{startTime} and #{endTime} and cnum>0 and flag=0 order by remarks asc,isCollection desc,time desc;
+        </if>
+        <if test="cprice==1 and isCollection==1">
+            where time between #{startTime} and #{endTime} and cnum>0 and flag=0 order by remarks desc,isCollection desc,time desc;
+        </if>
+        <if test="cprice==null and isCollection==0">
+            where time between #{startTime} and #{endTime} and cnum>0 and flag=0 order by isCollection asc,time desc;
+        </if>
+        <if test="cprice==null and isCollection==1">
+            where time between #{startTime} and #{endTime} and cnum>0 and flag=0 order  by isCollection desc,time desc;
+        </if>
+        <if test="cprice==1 and isCollection==null">
+            where time between #{startTime} and #{endTime} and cnum>0 and flag=0 order by remarks desc,time desc;
+        </if>
+    </select>
+
+    <!--搜索框模糊搜索商品-->
+    <select id="searchCommodity" parameterType="String" resultType="commodity">
+        select *
+        from tb_commodity where cname like concat(concat('%',#{title}),'%') and cnum>0 order by time desc;
+    </select>
+</mapper>

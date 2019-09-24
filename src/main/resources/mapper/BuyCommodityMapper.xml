@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.BuyCommodityMapper">
+    <!--查找商品细节-->
+    <select id="findDetails" parameterType="String" resultType="commodity">
+        select *
+        from tb_commodity where id=#{id};
+    </select>
+
+    <!--查找收藏前五的-->
+    <select id="findTopFive" resultType="commodity">
+        select * from tb_commodity order by isCollection desc limit 5;
+    </select>
+
+    <!--查询该商品是否被当前用户收藏-->
+    <select id="searCollection" resultType="Integer">
+        select count(1) from tb_collection where id=#{id} and email=#{email};
+    </select>
+
+    <!--查询是否已经加入购物车-->
+    <select id="findIsAddShopCart" resultType="Integer">
+        select count(1) from tb_shopcart where cid=#{cid} and email=#{email};
+    </select>
+    <!--再次加入，数量+1-->
+    <update id="modifyNum">
+        update tb_shopcart set cnum=(SELECT t.cnum from ( SELECT cnum+1 as cnum FROM tb_shopcart WHERE cid=#{cid} and email=#{email}) t) where cid=#{cid} and email=#{email};
+    </update>
+    <!--加入商品至购物车-->
+    <insert id="addShopCart" parameterType="commodity">
+        insert into tb_shopcart(id, cid, email,address, cname, cdescribes, cprice, cnum, curl, time) values (#{id},#{cid},#{email},#{address},#{cname},#{cdescribes},#{cprice},#{cnum},#{curl},#{time})
+    </insert>
+    <!--验证商品数量是否充足-->
+    <select id="findDetailsNum" resultType="Integer">
+        select cnum from tb_commodity where id=#{id}
+    </select>
+
+    <!--写入订单表-->
+    <insert id="generateOrder" parameterType="order">
+        insert into tb_order(id, buyEmail, buyName, buyPhone, totalPrice, totalNum, address, status, time) values (#{id},#{buyEmail},#{buyName},#{buyPhone},#{totalPrice},#{totalNum},#{address},#{status},#{time})
+    </insert>
+    <!--通过cid查找商品，获得写入订单明细的商品信息-->
+    <select id="findCommodity" resultType="commodity">
+        select * from tb_commodity where id=#{cid};
+    </select>
+    <!--查询每个商品数量-->
+    <select id="findCnum" resultType="Integer">
+        select cnum from tb_shopcart where cid=#{cid} and email=#{email};
+    </select>
+    <!--写入订单详细表-->
+    <insert id="generateOrderDetails">
+        insert into tb_order_details(id, orderId, cid, curl, cname, cemail, sellPhone, buyEmail, buyName, buyPhone, cnum, cprice, ctotalPrice, cdesc, time) values (#{id},#{orderId},#{cid},#{curl},#{cname},#{cemail},#{sellPhone},#{buyEmail},#{buyName},#{buyPhone},#{cnum},#{cprice},#{ctotalPrice},#{cdesc},#{time});
+    </insert>
+    <!--修改商品状态-->
+    <update id="modifyIsSellOut">
+        update tb_commodity set isSellOut=1,cnum=(select t.cnum from(select cnum-#{cnum} as cnum from tb_commodity where id=#{cid}) t) where id=#{cid};
+    </update>
+    <!--扣除金额-->
+    <update id="payment">
+        update tb_user set balance=#{balance} where email=#{email};
+    </update>
+    <!--扣除金额失败，删除订单表数据-->
+    <delete id="delOrders">
+        delete from tb_order where id=#{id};
+    </delete>
+    <!--扣除金额失败，删除订单详细表数据-->
+    <delete id="delOrdersDetails">
+        delete from tb_order_details where id=#{id};
+    </delete>
+    <!--购买成功后，清除购物车-->
+    <delete id="delShopcart">
+        delete from tb_shopcart where cid in
+        <foreach item="id" index="index" collection="array" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!--查询商品-->
+    <select id="findCommodities" resultType="commodity">
+        select * from tb_commodity where id in
+        <foreach item="id" index="index" collection="array" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </select>
+
+    <!--删除一个购物车商品-->
+    <delete id="delOne">
+        delete from tb_shopcart where cid=#{id};
+    </delete>
+
+</mapper>

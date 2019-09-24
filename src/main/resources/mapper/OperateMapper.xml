@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.OperateMapper">
+
+    <resultMap id="CommodityMap" type="commodity">
+        <id property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="cname" column="cname" jdbcType="VARCHAR"/>
+        <result property="cprice" column="cprice" jdbcType="DOUBLE"/>
+        <result property="cnum" column="cnum" jdbcType="INTEGER"/>
+        <result property="url" column="url" jdbcType="VARCHAR"/>
+        <result property="describes" column="describes" jdbcType="VARCHAR"/>
+        <result property="bigType" column="bigType" jdbcType="BIGINT"/>
+        <result property="smallType" column="smallType" jdbcType="VARCHAR"/>
+        <result property="flag" column="flag" jdbcType="INTEGER"/>
+        <result property="isNew" column="isNew" jdbcType="INTEGER"/>
+        <result property="isCollection" column="isCollection" jdbcType="INTEGER"/>
+        <result property="isSellOut" column="isSellOut" jdbcType="INTEGER"/>
+        <result property="salesVolume" column="salesVolume" jdbcType="INTEGER"/>
+        <result property="time" column="time" jdbcType="VARCHAR"/>
+        <result property="remarks" column="remarks" jdbcType="DOUBLE"/>
+    </resultMap>
+
+    <!--查找所有商品-->
+    <select id="commodity" parameterType="Map" resultMap="CommodityMap">
+        select * from tb_commodity where flag=0 and cnum>0
+        <if test="start!=null and size!=null">
+            limit #{start},#{size};
+        </if>;
+    </select>
+    <!--查找所有商品数量-->
+    <select id="commodityCount" resultType="Integer">
+        select count(1) from tb_commodity where flag=0 and cnum>0;
+    </select>
+
+    <!--查找我已售商品-->
+    <select id="findSaleCommodity" resultType="commodity">
+        select * from tb_commodity where email=#{0} and isSellOut=1 and flag=0 order by time desc limit 0,8;
+    </select>
+
+    <!--查找我在售商品-->
+    <select id="findInSaleCommodity" parameterType="String" resultType="commodity">
+        select * from tb_commodity where email=#{email} and isSellOut=0 and flag=0 order by time desc limit 0,8;
+    </select>
+
+    <!--查找我发布已删除商品-->
+    <select id="findDelCommodity" parameterType="String" resultType="commodity">
+        select * from tb_commodity where email=#{email} and flag=1 order by time desc limit 0,8;
+    </select>
+
+    <!--查找收藏的商品-->
+    <select id="findCollection" resultType="commodity">
+        select t1.*
+        from tb_commodity t1 left join tb_collection t2 on t1.id=t2.id where t2.email=#{email};
+    </select>
+
+    <!--查找我收货的订单-->
+    <select id="findOrders" resultType="order">
+        select * from tb_order where buyEmail=#{email} and status!=3 order by time desc;
+    </select>
+
+
+
+    <!--查找我购物车的商品-->
+    <select id="findMyShopcart" parameterType="String" resultType="shopcart">
+        select * from tb_shopcart where email=#{email} order by time desc;
+    </select>
+
+    <!--假删除商品-->
+    <update id="delCommodity" parameterType="String">
+        update tb_commodity set flag=1 where id=#{id};
+    </update>
+
+    <!--恢复假删除的商品-->
+    <update id="recoveryCommodity" parameterType="String">
+        update tb_commodity set flag=0 where id=#{id};
+    </update>
+
+    <!--真删除商品-->
+    <delete id="realDelCommodity" parameterType="String">
+        delete from tb_commodity where id=#{id};
+    </delete>
+
+    <!--收藏商品-->
+    <insert id="addCollection">
+        <!--写入收藏表-->
+        insert into tb_collection(id,email) values(#{id},#{email});
+    </insert>
+    <!--向商品表收藏+1-->
+    <update id="plusCollectionNum">
+        UPDATE tb_commodity
+        SET isCollection=(SELECT t.isCollection from ( SELECT isCollection+1 as isCollection FROM tb_commodity WHERE id=#{id}) t)
+        where id=#{id};
+    </update>
+
+    <!--查询是否被收藏-->
+    <select id="findIsCollection" resultType="Integer">
+        select count(1) from tb_collection where id=#{id} and email=#{email};
+    </select>
+    <!--再次点击取消收藏 -->
+    <delete id="delCollection">
+        delete from tb_collection where id=#{id} and email=#{email};
+    </delete>
+    <!--取消收藏，总数-1-->
+    <update id="reduceCollectionNum">
+        UPDATE tb_commodity
+        SET isCollection=(SELECT t.isCollection from ( SELECT isCollection-1 as isCollection FROM tb_commodity WHERE id=#{id}) t)
+        where id=#{id};
+    </update>
+
+    <!--更新商品-->
+    <update id="updateCommodity">
+        update tb_commodity set cname=#{cname},cprice=#{cprice},remarks=#{remarks},cnum=#{cnum},bigType=#{bigType},smallType=#{smallType},describes=#{describes} where id=#{id};
+    </update>
+
+    <!--查找我的发货订单-->
+    <select id="findSendOrder" resultType="order">
+        SELECT
+            t2.*
+        FROM
+            tb_order_details t1
+                RIGHT JOIN tb_order t2 ON t1.orderId = t2.id
+        WHERE
+            t1.cemail = #{email} and t2.status!=4;
+    </select>
+
+</mapper>

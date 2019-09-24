@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+        <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+                "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.UserMapper">
+    <!--登陆-->
+    <select id="register" parameterType="String">
+        insert into tb_user(id,email,head) values(#{id},#{email},#{head});
+    </select>
+    <!--查找用户-->
+    <select id="findUser" parameterType="String" resultType="user">
+        select * from tb_user where email=#{email};
+    </select>
+
+    <!--查找购物车商品数量-->
+    <select id="findShopCartNum" parameterType="String" resultType="Integer">
+        select count(1) from tb_shopcart where email=#{email};
+    </select>
+
+    <!--更新个人信息-->
+    <update id="updateUserInfo">
+        update tb_user set name=#{name},head=#{newName},age=#{age},sex=#{sex},phone=#{phone},province=#{province},city=#{city},county=#{county},introduce=#{introduce} where email=#{email};
+    </update>
+
+    <!--优惠活动-->
+    <select id="findDiscount" resultType="commodity">
+        select * from tb_commodity where cprice-remarks>0 and cnum>0 and flag=0 order by remarks/cprice desc limit 15;
+    </select>
+    <!--考虑收藏，优惠力度取前三-->
+    <select id="findThreeTop" resultType="commodity">
+        SELECT
+            t3.id,
+            t3.email,
+            t3.cname,
+            t3.cprice,
+            t3.cnum,
+            t3.url,
+            t3.describes,
+            t3.bigType,
+            t3.smallType,
+            t3.flag,
+            t3.isNew,
+            t3.isCollection,
+            t3.isSellOut,
+            t3.salesVolume,
+            t3.time,
+            t3.remarks
+        FROM
+            (
+                SELECT
+                    t1.*,
+                    t2.count
+                FROM
+                    ( SELECT * FROM tb_commodity WHERE cnum > 0 AND flag = 0 AND cprice - remarks > 0 ) t1
+                        INNER JOIN ( SELECT id, count( 1 ) AS count FROM tb_collection GROUP BY id) t2 ON t1.id = t2.id
+                WHERE
+                    t1.cnum > 0
+                  AND t1.flag = 0
+                ORDER BY
+                    t2.count * ( t1.cprice - t1.remarks ) DESC
+            ) t3
+        LIMIT 3;
+    </select>
+
+    <!--首页轮播图，按照降价百分比最高的8个-->
+    <select id="findIndex" resultType="commodity">
+        select * from tb_commodity where cnum>0 and flag=0 and cprice-remarks>0 order by (cprice-remarks)/cprice desc limit 8;
+    </select>
+
+    <!--更多推荐，按照商品上架时间取最新的15个-->
+    <select id="findMore" resultType="commodity">
+        select * from tb_commodity where flag=0 and cnum>0 order by time desc limit 15;
+    </select>
+
+    <!--查询一楼商品-->
+    <select id="findFirstFloor" resultType="commodity">
+        select * from tb_commodity where flag=0 and cnum>0 and bigType='鞋包服饰' order by time desc limit 5;
+    </select>
+    <!--查询二楼商品-->
+    <select id="findSecondFloor" resultType="commodity">
+        select * from tb_commodity where flag=0 and cnum>0 and bigType='数码家电' order by time desc limit 5;
+    </select>
+    <!--查询三楼商品-->
+    <select id="findThreeFloor" resultType="commodity">
+        select * from tb_commodity where flag=0 and cnum>0 and bigType='运动旅行' order by time desc limit 5;
+    </select>
+
+    <!--查找所有商品-->
+    <select id="findCommodity" resultType="commodity">
+        select * from tb_commodity where cnum>0 and flag=0 and isNew=1;
+    </select>
+
+    <!--修改是否为新品-->
+    <update id="modifyIsNew">
+        update tb_commodity set isNew=0 where id in
+        <foreach item="id" index="index" collection="array" open="(" close=")" separator=",">
+            #{id}
+        </foreach>
+    </update>
+</mapper>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="mapper.AdminMapper">
+
+    <resultMap id="UserMap" type="user">
+        <id property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="password" column="password" jdbcType="VARCHAR"/>
+        <result property="head" column="head" jdbcType="VARCHAR"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="sex" column="sex" jdbcType="VARCHAR"/>
+        <result property="age" column="age" jdbcType="BIGINT"/>
+        <result property="province" column="province" jdbcType="VARCHAR"/>
+        <result property="city" column="city" jdbcType="VARCHAR"/>
+        <result property="county" column="county" jdbcType="VARCHAR"/>
+        <result property="balance" column="balance" jdbcType="DOUBLE"/>
+        <result property="introduce" column="introduce" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap id="CommodityMap" type="commodity">
+        <id property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="cname" column="cname" jdbcType="VARCHAR"/>
+        <result property="cprice" column="cprice" jdbcType="DOUBLE"/>
+        <result property="cnum" column="cnum" jdbcType="INTEGER"/>
+        <result property="url" column="url" jdbcType="VARCHAR"/>
+        <result property="describes" column="describes" jdbcType="VARCHAR"/>
+        <result property="bigType" column="bigType" jdbcType="BIGINT"/>
+        <result property="smallType" column="smallType" jdbcType="VARCHAR"/>
+        <result property="flag" column="flag" jdbcType="INTEGER"/>
+        <result property="isNew" column="isNew" jdbcType="INTEGER"/>
+        <result property="isCollection" column="isCollection" jdbcType="INTEGER"/>
+        <result property="isSellOut" column="isSellOut" jdbcType="INTEGER"/>
+        <result property="salesVolume" column="salesVolume" jdbcType="INTEGER"/>
+        <result property="time" column="time" jdbcType="VARCHAR"/>
+        <result property="remarks" column="remarks" jdbcType="DOUBLE"/>
+    </resultMap>
+
+    <resultMap id="OrderMap" type="order">
+        <id property="id" column="id" jdbcType="VARCHAR"/>
+        <result property="buyEmail" column="buyEmail" jdbcType="VARCHAR"/>
+        <result property="buyName" column="buyName" jdbcType="VARCHAR"/>
+        <result property="buyPhone" column="buyPhone" jdbcType="VARCHAR"/>
+        <result property="totalPrice" column="totalPrice" jdbcType="DOUBLE"/>
+        <result property="totalNum" column="totalNum" jdbcType="BIGINT"/>
+        <result property="address" column="address" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="time" column="time" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--管理员登陆-->
+    <select id="adminLogin" parameterType="admin" resultType="admin">
+        select * from tb_admin where username=#{username} and password=#{password};
+    </select>
+
+    <!--删除用户-->
+    <delete id="delUser" parameterType="String">
+        delete from tb_user where id=#{id};
+    </delete>
+    <!--删除商品-->
+    <delete id="delCommodity" parameterType="String">
+        delete from tb_commodity where id=#{id};
+    </delete>
+    <!--删除订单-->
+    <delete id="delOrder" parameterType="String">
+        delete from tb_order where id=#{id};
+    </delete>
+
+    <!--分页查询用户-->
+    <select id="toUserManage" parameterType="Map" resultMap="UserMap">
+        select * from tb_user
+        <if test="start!=null and size!=null">
+            limit #{start},#{size};
+        </if>
+    </select>
+    <!--查询总记录数-->
+    <select id="userCount" resultType="Integer">
+        select count(1) from tb_user;
+    </select>
+
+    <!--分页查询商品-->
+    <select id="toCommodityManage" parameterType="Map"  resultMap="CommodityMap">
+        select * from tb_commodity
+        <if test="start!=null and size!=null">
+            limit #{start},#{size};
+        </if>
+    </select>
+    <!--查询总记录数-->
+    <select id="commodityCount" resultType="Integer">
+        select count(1) from tb_commodity;
+    </select>
+
+    <!--分页查询订单-->
+    <select id="toOrderManage" parameterType="Map"  resultMap="OrderMap">
+        select * from tb_order
+        <if test="start!=null and size!=null">
+            limit #{start},#{size};
+        </if>
+    </select>
+    <!--查询总记录数-->
+    <select id="orderCount" resultType="Integer">
+        select count(1) from tb_order;
+    </select>
+
+
+    <!--条件分页查询用户-->
+    <select id="findUserByCon" parameterType="Map" resultMap="UserMap">
+        select * from tb_user where name like '%${name}%'
+        <if test="start!=null and size!=null">
+            limit #{start},#{size};
+        </if>
+    </select>
+    <!--条件查询总记录数-->
+    <select id="userConCount" resultType="Integer">
+        select count(1) from tb_user where name like '%${name}%';
+    </select>
+
+    <!--条件分页查询商品-->
+    <select id="findCommodityByCon" parameterType="Map" resultMap="CommodityMap">
+        select * from tb_commodity where cname like '%${name}%'
+        <if test="start!=null and size!=null">
+            limit #{start},#{size};
+        </if>
+    </select>
+    <!--条件查询总记录数-->
+    <select id="commodityConCount" resultType="Integer">
+        select count(1) from tb_commodity where cname like '%${cname}%';
+    </select>
+
+    <!--条件分页查询订单-->
+    <select id="findOrderByCon" parameterType="Map" resultMap="OrderMap">
+        select * from tb_order where id like '%${name}%'
+        <if test="start!=null and size!=null">
+            limit #{start},#{size};
+        </if>
+    </select>
+    <!--条件查询总记录数-->
+    <select id="orderConCount" resultType="Integer">
+        select count(1) from tb_order where id like '%${id}%';
+    </select>
+
+    <!---->
+    <select id="findUserInfo" resultType="user">
+        select * from tb_user where email=#{email};
+    </select>
+
+    <update id="updateUserInfo">
+        update tb_user set name=#{name},head=#{newName},age=#{age},sex=#{sex},phone=#{phone},province=#{province},city=#{city},county=#{county},introduce=#{introduce} where email=#{email};
+    </update>
+</mapper>

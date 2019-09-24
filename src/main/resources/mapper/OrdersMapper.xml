@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.OrdersMapper">
+    <!--删除指定的订单-->
+    <update id="delOrders">
+        update tb_order set status=3 where id=#{id};
+    </update>
+
+    <update id="delSend">
+        update tb_order set status=4 where id=#{id};
+    </update>
+    <!--同时删除订单明细-->
+    <delete id="delOrderDetails">
+        delete from tb_order_details where orderId=#{id};
+    </delete>
+
+    <!--确认收货-->
+    <update id="confirmReceipt">
+        update tb_order set status=2 where id=#{id};
+    </update>
+
+    <!--确认发货-->
+    <update id="sendCommodity">
+        update tb_order set status=1 where id=#{id};
+    </update>
+
+    <!--查看订单明细-->
+    <select id="seeDetails" resultType="OrderDetails">
+        select * from tb_order_details where orderId=#{orderId};
+    </select>
+</mapper>

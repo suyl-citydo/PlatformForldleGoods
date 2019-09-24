@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mapper.AddCommodityMapper">
+
+
+    <!--添加商品-->
+    <insert id="addCommodity" parameterType="commodity">
+        insert into tb_commodity(id, email, cname, cprice, cnum, url, describes, bigType, smallType, flag, isNew, isCollection, isSellOut, salesVolume, time, remarks)
+           values(#{id},#{email},#{cname},#{cprice},#{cnum},#{url},#{describes},#{bigType},#{smallType},#{flag},#{isNew},#{isCollection},#{isSellOut},#{salesVolume},#{time},#{remarks});
+    </insert>
+</mapper>
