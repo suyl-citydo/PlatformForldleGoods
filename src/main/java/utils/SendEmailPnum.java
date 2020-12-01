@@ -10,9 +10,10 @@ import java.util.Random;
 
 public class SendEmailPnum {
     //发件人
-    private static String senderAddress="1850654096@qq.com";
+    private static String senderAddress="xxx@qq.com";
     private static String sendAccount="二手物品置换平台";
-    private static String sendPassWord="icayojsurcyxedig";
+    //到qq邮箱服务申请，类似密钥
+    private static String sendPassWord="xxxx";
     private static Transport transport;
     private static String pnum;
     public static String sendEmail(String recipientAddress) throws MessagingException, IOException {
